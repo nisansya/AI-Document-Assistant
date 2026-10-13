@@ -1,0 +1,15 @@
+langchain==1.4.2
+langchain-classic==1.0.8
+langchain-community==0.4.2
+langchain-core==1.6.5
+langchain-protocol==0.0.19
+langchain-text-splitters==1.1.2
+pypdf==6.19.0
+python-dotenv==1.2.3
+streamlit==1.64.0
+supabase==2.32.0
+supabase-auth==2.32.0
+supabase-functions==2.32.0
+chromadb
+openai
+groq
