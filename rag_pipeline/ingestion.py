@@ -38,20 +38,6 @@ def load_uploaded_pdfs(uploaded_files):
         all_pages.append(doc)
     
   return all_pages
-  # for file in uploaded_files:
-  #   if file.name.lower().endswith(".pdf"):
-  #     file_path= os.path.join(file.name)
-  #     pdf_loader= PyPDFLoader(file)
-  #     document=pdf_loader.load()
-  #     all_pages.extend(document)
-
-  #   else:
-  #     return False
-  # print(document)
-  # print(all_pages)
-
-  # return all_pages
-
 
 def clean_text(docs):
   for doc in docs:

@@ -1,41 +1,3 @@
-# def build_context(documents):
-#   context= []
-
-#   for index, document in enumerate(documents, start= 1):
-#     meta_data= document["metadata"]
-
-#     context.append(
-#       f"""
-# """
-#     )
-    
-
-# def create_prompt(query, context):
-#   prompt= f"""
-#   You are a document based AI assistant.
-
-#   Answer the user's question using ONLY the provided context.
-
-#   If the answer cannot be found in the context, say:
-
-#   "I could not find this information in the provided documents."
-
-#   Do not invent information.
-
-#   Always mention the source when possible.
-
-#   CONTEXT:
-#   {context}
-
-#   USER QUESTION:
-#   {query}
-
-#   ANSWER:
-#   """
-
-#   return prompt
-
-
 ROUTER_PROMPT= """
 You are a query router for an AI Document Intelligence and Research Assistant.
 
@@ -100,36 +62,6 @@ Answer based ONLY on context. If not exactly in context, try to infer.
 ANSWER:
 
 """
-
-
-RESEARCH_PROMPT= """
-You are an AI Research Assistant.
-
-Analyse the provided document context and answer the research question.
-
-Focus on:
-
--Important findings
--Research gaps
--Limitation
--Trends
--Future research directions
-
-Rules:
--Use ONLY the provided information.
--Do not invent information. 
--Clearly distinguish findings from possible future directions.
-
-CONTEXT:
-{context}
-
-Research QUESTION:
-{query}
-
-Analysis:
-
-"""
-
 
 SUMMARY_PROMPT= """
 You are an AI Document Summarization Research Assistant.

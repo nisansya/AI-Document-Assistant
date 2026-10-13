@@ -2,16 +2,6 @@ import streamlit as st
 from src.database.db import user_login_db, check_user_exist, create_user_account
 from src.ui.layout import layout
 
-# def home():
-#     if 'user_data' in st.session_state:
-#         st.session_state.user_login_type= "dashboard"
-    
-    # if "user_login_type"  not in st.session_state or st.session_state.user_login_type== "login":
-    #     login()
-        
-    # elif st.session_state.user_login_type== "register":
-    #     register()
-
 def login():
     layout()
     st.markdown(

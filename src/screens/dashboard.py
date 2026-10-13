@@ -6,7 +6,7 @@ from intelligence.router import route_query
 from intelligence.summarizer import summarize_document
 from intelligence.question_solver import question_solver_document
 from llm.query_rewriter import rewrite_query
-from intelligence.researcher import research_documents
+# from intelligence.researcher import research_documents
 from rag_pipeline.retrieval import retriever_pipeline
 from src.ui.layout import layout
 from src.database.db import conversations, find_conversations, store_messages, get_conversation_messages, store_uploaded_files, get_file_hash, get_documents
@@ -89,14 +89,7 @@ def dashboard():
                         st.success(f"Processed {len(new_files)} new documents")
                     else:
                         st.info('No new documents to process')
-                    # st.session_state.documents_name= [
-                    #     document.name for document in st.session_state.documents
-                    # ]
-
-                    # for file in uploader_files:
-                    #     db_files_stored= store_uploaded_files(file.name, user_data['id']) 
-
-                    # st.success("Document processed!") 
+                     
         documents= get_documents(user_data['id'])
         print(documents)
         st.session_state.documents_name= [
@@ -143,16 +136,6 @@ def dashboard():
                         f= BytesIO(file_bytes)
                         f.name= path.split("/")[-1]
                         files_to_pass.append(f)
-                # st.markdown(
-                #     f"""
-                #     <div class="documnet-card">
-                #         <div class= "document-name">
-                #             📄 {document}
-                #         </div>
-                #     </div>
-                #     """,
-                #     unsafe_allow_html= True
-                # )
                 total_files+=1
 
             st.markdown(
@@ -185,7 +168,7 @@ def dashboard():
 
                         if st.button(f"💬 {convo_title}",
                             key= f"chat_btn_{convo_id}",
-                            use_container_width= True
+                            use_container_width= True,
                         ):
                             st.session_state.new_conv_id= convo_id
                             print("new convo id =", convo_id)
@@ -199,57 +182,12 @@ def dashboard():
                             print("messages= ", st.session_state.messages)
                             st.rerun()
 
-                # st.markdown(
-                #     f"""
-                #     <div class="chat-card">
-                #         <div class="chat-name">
-                #             👈🏻 {[convo_title for convo_title in st.session_state.conv_title]}
-                #         </div>
-                #     </div>
-                #     """,
-                #     unsafe_allow_html= True
-                # ) 
-            
-
-            # for convo in all_convos:
-            #     convo_id= convo['id']
-            #     convo_title= convo['title']
-
-            #     is_active= st.session_state.get("new_conv_id") == convo_id
-
-            #     if st.sidebar.button(
-            #         f"{'👈🏻' if is_active else '💬'} {convo_title}",
-            #         key= convo_id,
-            #         use_container_width= True
-            #     ):
-            #         st.session_state.new_conv_id= convo_id
-            #         st.session_state.conv_title= convo_title
-            #         msgs= get_conversation_messages(convo_id)
-            #         st.session_state.messages= msgs
-            #         st.rerun()
-
-                # if st.session_state.get("new_conv_id") is None:
-                #     st.info('start a new chat by typing in the input field.')
-                # else: 
-                #     st.markdown(
-                #         f"""
-                #         <div class="chat-card">
-                #             <div class="chat-name">
-                #                 👈🏻 {st.session_state.conv_title}
-                #             </div>
-                #         </div>
-                #         """,
-                #         unsafe_allow_html= True
-                #     ) 
-           
-            # else:
-            #     st.error("No file uploaded!")
         else: 
             st.warning('Please upload any document')
 
         col1, col2, col3= st.columns([3,3,3])
         with col2:
-            if st.button("Logout ->", width="stretch"):
+            if st.button("Logout ->", use_container_width= True):
                 st.session_state.user_login_type= "login"
                 st.session_state.clear()
                 st.session_state.user_data= None
@@ -293,12 +231,12 @@ def dashboard():
             with st.spinner("processing query..."):
                 if st.session_state.new_conv_id is None:
                     title= query[:50]
-                    new_conv_id= conversations(user_data['id'], title)
-                    print("new convo id= ", new_conv_id)
-                    st.session_state.new_conv_id= new_conv_id[0]['id']
-                    st.session_state.conv_title= new_conv_id[0]['title']
-                    store_messages(new_conv_id[0]['id'], query)
-                    st.session_state.messages= get_conversation_messages(new_conv_id[0]['id']) 
+                    new_conv= conversations(user_data['id'], title)
+                    print("new convo id= ", new_conv)
+                    st.session_state.new_conv_id= new_conv[0]['id']
+                    st.session_state.conv_title= new_conv[0]['title']
+                    store_messages(new_conv[0]['id'], query)
+                    st.session_state.messages= get_conversation_messages(new_conv[0]['id']) 
 
                 else:
                     print("old messages= ", st.session_state.messages)
@@ -313,7 +251,7 @@ def dashboard():
                 mode= route_query(query)
                 st.session_state.mode= mode
 
-        col1, col2, col3, col4= st.columns(4)
+        col1, col2, col3= st.columns(3)
         with col1:  
                 
             st.markdown(
@@ -358,22 +296,6 @@ def dashboard():
                 """,
                 unsafe_allow_html= True
             )
-                    
-        
-        with col4:
-            
-            st.markdown(
-                """
-                <div class="mode-card">
-                    <div class="mode-icon">🔍</div>
-                    <div class="mode-name">Research</div>
-                    <div class="mode-description>
-                        Discover gaps, trends and insights.
-                    </div>
-                </div>
-                """,
-                unsafe_allow_html= True
-            )
                 
         st.markdown(
             f"""
@@ -391,10 +313,6 @@ def dashboard():
             with st.spinner("Processing query..."):
 
                 if st.session_state.mode == "COMPARISON":
-                    # results= retriever.retrieve(query)
-                    # answer= compare_documents(results)
-                    # st.session_state.answer= answer
-                    # answer_portion()
                     
                     if len(st.session_state.selected_docs) == 2:
                         uploaded_files= load_uploaded_pdfs(files_to_pass)
@@ -415,11 +333,6 @@ def dashboard():
                     docs_chunks= split_doc(clean_uploaded_files)
                     answer= summarize_document(docs_chunks)
                     st.session_state.answer= answer
-                    # answer_portion()
-                    # results= retriever.retrieve(query)
-                    # answer= summarize_document(results)
-                    # st.session_state.answer= answer
-                    # answer_portion()
 
                 elif st.session_state.mode == "QUESTION":
                     results= retriever_pipeline(query)
@@ -428,214 +341,14 @@ def dashboard():
                     answer, sources= question_solver_document(results, query)
                     st.session_state.answer= answer
                     st.session_state.sources= sources
-                    # answer_portion()
-
-                elif st.session_state.mode == "RESEARCH":
-                    results= retriever_pipeline(query)
-                    # results= retriever_obj.retrieve(query)
-                    answer= research_documents(results, query)
-                    st.session_state.answer= answer
-                    answer_portion()
-
+                    
                 else:
-                    # st.session_state.answer= None
-                    # st.session_state.sources= None
                     st.error("Please enter correct query.")
             st.session_state.button= None
             st.rerun()
 
         if st.session_state.get("answer"):
             answer_portion()
-
-        # if st.session_state.button== "active":
-        #     if not query:
-        #         st.error("Please enter your query.")
-        #     else: 
-        #         title= query[:50]
-        #         convo= find_conversations(user_data['id'])
-        #         if len(convo)==0 or st.session_state.new_conv_id== None:
-        #             new_conv_id= conversations(user_data['id'], title)
-        #             print("new convo id= ", new_conv_id)
-        #             st.session_state.new_conv_id= new_conv_id[0]['id']
-        #             st.session_state.conv_title= new_conv_id[0]['title']
-        #             store_messages(st.session_state.new_conv_id, query)
-
-        #         else:
-        #             query= rewrite_query(query, st.session_state.messages)
-        #             print("rewritten query= ", query)
-        #             convo_id= st.session_state.new_conv_id
-        #             store_messages(convo_id, query)
-        #             # st.session_state.messages= get_conversation_messages(convo_id)
-        #             print(st.session_state.messages)
-
-                
-
-
-        #         mode= route_query(query)
-        #         st.session_state.mode= mode
-        #         st.rerun()
-
-        # else: 
-        #     st.session_state.mode= None
-
-        # col1, col2, col3, col4= st.columns(4)
-
-        # with col1:  
-        #     # if st.button("💬 Ask", key= "ask_mode"):
-        #     #     if not query:
-        #     #         st.error("Enter your query")
-        #     #     else:
-        #     #         st.session_state.mode= "ask"
-
-        #     st.markdown(
-        #         """
-        #         <div class="mode-card">
-        #             <div class="mode-icon">💬</div>
-        #             <div class="mode-name">Ask</div>
-        #             <div class="mode-description>
-        #                 Ask question about your documents.
-        #             </div>
-        #         </div>
-        #         """,
-        #         unsafe_allow_html= True
-        #     )
-        
-        # with col2:
-        #     # if st.button("📋 Summarize", key= "summary_mode"):
-        #     #     if not query:
-        #     #         st.error("Enter your query")
-        #     #     else:
-        #     #         st.session_state.mode= "summary"
-        #     st.markdown(
-        #         """
-        #         <div class="mode-card">
-        #             <div class="mode-icon">📋</div>
-        #             <div class="mode-name">Summarize</div>
-        #             <div class="mode-description>
-        #                 Generate concise document summaries.
-        #             </div>
-        #         </div>
-        #         """,
-        #         unsafe_allow_html= True
-        #     )
-
-        # with col3: 
-        #     # if st.button("⚖ Compare", key= "compare_mode"):
-        #     #     if not query:
-        #     #         st.error("Enter your query")
-        #     #     else:
-        #     #         st.session_state.mode= "compare"
-        #     st.markdown(
-        #         """
-        #         <div class="mode-card">
-        #             <div class="mode-icon">⚖</div>
-        #             <div class="mode-name">Compare</div>
-        #             <div class="mode-description>
-        #                 Compare documents and findings.
-        #             </div>
-        #         </div>
-        #         """,
-        #         unsafe_allow_html= True
-        #     )
-            
-
-        # with col4:
-        #     # if st.button("Research", key= "research_mode"):
-        #     #     if not query:
-        #     #         st.error("Enter your query")
-        #     #     else:
-        #     #         st.session_state.mode= "research"
-        #     st.markdown(
-        #         """
-        #         <div class="mode-card">
-        #             <div class="mode-icon">🔍</div>
-        #             <div class="mode-name">Research</div>
-        #             <div class="mode-description>
-        #                 Discover gaps, trends and insights.
-        #             </div>
-        #         </div>
-        #         """,
-        #         unsafe_allow_html= True
-        #     )
-        
-        # st.markdown(
-        #     f"""
-        #     <div class="active-mode">
-        #         Active mode
-        #         <span class="mode">
-        #             {st.session_state.mode}
-        #         </span>
-        #     </div>
-        #     """,
-        #     unsafe_allow_html= True
-        # )
-            
-        # if st.session_state.button=="active" and query:
-        #     with st.spinner("Processing query..."):
-
-        #         if st.session_state.mode == "COMPARISON":
-        #             # results= retriever.retrieve(query)
-        #             # answer= compare_documents(results)
-        #             # st.session_state.answer= answer
-        #             # answer_portion()
-                    
-        #             if total_files > 2:
-
-        #                 st.error("Sorry! You can upload ony two files for comparison")
-        #             else:
-        #                 uploaded_files= load_uploaded_pdfs(uploader_files)
-        #                 clean_uploaded_files= clean_text(uploaded_files)
-        #                 all_chunks= split_doc(clean_uploaded_files)
-        #                 document_a_chunks= get_document_chunks(all_chunks, st.session_state.documents_name[0])
-        #                 document_b_chunks= get_document_chunks(all_chunks, st.session_state.documents_name[1])
-        #                 answer= compare_documents(document_a_chunks, document_b_chunks)
-        #                 st.session_state.answer= answer
-        #                 answer_portion()
-                    
-        #         elif st.session_state.mode == "SUMMARY":
-        #             uploaded_files= load_uploaded_pdfs(uploader_files)
-        #             clean_uploaded_files= clean_text(uploaded_files)
-        #             docs_chunks= split_doc(clean_uploaded_files)
-        #             answer= summarize_document(docs_chunks)
-        #             st.session_state.answer= answer
-        #             answer_portion()
-        #             # results= retriever.retrieve(query)
-        #             # answer= summarize_document(results)
-        #             # st.session_state.answer= answer
-        #             # answer_portion()
-
-        #         elif st.session_state.mode == "QUESTION":
-        #             results= retriever_pipeline(query)
-        #             # results= retriever_obj.retrieve(query)
-        #             print(results)
-        #             answer, sources= question_solver_document(results, query)
-        #             st.session_state.answer= answer
-        #             st.session_state.sources= sources
-        #             answer_portion()
-
-        #         elif st.session_state.mode == "RESEARCH":
-        #             results= retriever_pipeline(query)
-        #             # results= retriever_obj.retrieve(query)
-        #             answer= research_documents(results, query)
-        #             st.session_state.answer= answer
-        #             answer_portion()
-
-        #         else:
-        #             st.session_state.answer= None
-        #             st.session_state.sources= None
-        #             st.error("Please enter correct query.")
-        #     st.session_state.button= None
-        #     st.rerun()
-# def get_files_path(documents_name, selected_docs):
-#     selected_files=[]
-#     for doc in documents_name:
-#         # doc_name= doc['filename'] 
-#         if doc in selected_docs:
-#             file_path= doc.get('filepath') or doc.get('path') or f"uploads/{doc_name}"
-#             selected_files.append(file_path)
-
-#     return selected_files
-
 
 def answer_portion():
     
