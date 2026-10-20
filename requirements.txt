@@ -15,3 +15,5 @@ openai
 groq
 sentence-transformers
 rank-bm25
+torch
+torchvision
