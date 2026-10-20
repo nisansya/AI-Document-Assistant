@@ -13,3 +13,4 @@ supabase-functions==2.32.0
 chromadb
 openai
 groq
+sentence-transformers
