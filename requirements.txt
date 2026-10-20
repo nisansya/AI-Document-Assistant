@@ -14,3 +14,4 @@ chromadb
 openai
 groq
 sentence-transformers
+rank-bm25
