@@ -127,8 +127,17 @@ def layout():
             [data-testid="stSidebar"] > div{
                 padding-top: 1.5rem !important;
             }
-            
 
+            section[data-testid="stSidebar"] 
+            {
+                display: block !important;
+            }
+            
+            div[data-testid="collapsedControl"] 
+            {
+                display: block !important; visibility: visible !important;
+            }
+            
             .main-title{
                 font-size: 34px !important;
                 font-weight: 700 !important;
