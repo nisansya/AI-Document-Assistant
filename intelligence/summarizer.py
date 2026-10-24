@@ -5,7 +5,7 @@ def summarize_document(chunks):
     if not chunks:
         return "No text found in this document."
 
-    def get__short_text(chunks, max_chars= 3000):
+    def get__short_text(chunks, max_chars= 8000):
         full_text= "\n\n".join(
         chunk.page_content if hasattr(chunk, "page_content") else chunk.get("text", "")
         for chunk in chunks

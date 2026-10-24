@@ -8,9 +8,10 @@ import uuid
 from config import CHROMA_PATH, COLLECTION_NAME
 import os
 from pypdf import PdfReader
+import io
 
 def ingestion_pipeline(uploaded_pdf_files):
-    all_pages= load_uploaded_pdfs(uploaded_pdf_files)
+    check, status, all_pages= load_uploaded_pdfs(uploaded_pdf_files)
 
     cleaned_docs= clean_text(all_pages)
 
@@ -24,20 +25,54 @@ def ingestion_pipeline(uploaded_pdf_files):
     embeddings= embeddings.generate_embeddings(texts)
     vector_store.add_documents(chunked_docs, embeddings)
 
+def is_broken_pdf_text(text: str):
+  if not text or len(text.strip()) <500:
+    return True, "No Extractable text found. PDF might be scanned."
+  
+  char_per_line = len(re.findall(r'\n\s*[a-zA-Z0-9]\s*\n', text))
+
+  if char_per_line > 50:
+    return True, "Text extracted character-by-character (broken font encoding)."
+  
+  alpha = len(re.findall(r'[a-zA-Z]', text))
+
+  if alpha / max(len(text), 1) < 0.3:
+    return True, "Low text quality - mostly symbols/newlines."
+
+  # NEW: check for repeated / overlapped phrases (your LSTM case)
+  words = text.split()
+  if len(words)< 100:
+    return True, f"Too little text extracted ({len(words)} words) - PDF might be scanned"
+  
+  return False, ""
+
 def load_uploaded_pdfs(uploaded_files):
+  if not isinstance(uploaded_files, list):
+    uploaded_files= [uploaded_files]
   all_pages= []
   for file in uploaded_files:
-    pdf_reader= PdfReader(file)
+    file_bytes= file.getvalue() if hasattr(file, "getvalue") else file
+    stream= io.BytesIO(file_bytes)
+    pdf_reader= PdfReader(stream)
+    full_text= ""
+    temp_docs= []
     for i, page in enumerate(pdf_reader.pages):
       text= page.extract_text()
       if text:
+        full_text+= text +"\n"
         doc= Document(
           page_content= text,
           metadata= {"source": file.name, "page": i}
         )
-        all_pages.append(doc)
+        temp_docs.append(doc)
+
+    broken, reason= is_broken_pdf_text(full_text)
+    if broken:
+      return False, reason, {file.name}
     
-  return all_pages
+    all_pages.extend(temp_docs)
+    
+  return True, "success", all_pages
 
 def clean_text(docs):
   for doc in docs:

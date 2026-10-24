@@ -72,16 +72,19 @@ def dashboard():
                         if not file.name.lower().endswith(".pdf"):
                             st.session_state.documents= None
                             st.warning("All files should be in pdf form.")
-
                         else:
-                            file_bytes= file.getvalue()
-                            file_hash= get_file_hash(file_bytes)
+                            result, reason, filename= load_uploaded_pdfs(file)
+                            if result == False:
+                                st.error(f"Cannot process '{filename}' : {reason} Please upload a text-based PDF.")
+                            else:
+                                file_bytes= file.getvalue()
+                                file_hash= get_file_hash(file_bytes)
 
-                            is_new= store_uploaded_files(file.name, user_data['id'], file_bytes, file_hash)
-                            if not is_new or is_new== "file_exist":
-                                st.warning(f"{file.name} already exists- skipping")
-                                continue
-                            new_files.append(file)
+                                is_new= store_uploaded_files(file.name, user_data['id'], file_bytes, file_hash)
+                                if not is_new or is_new== "file_exist":
+                                    st.warning(f"{file.name} already exists- skipping")
+                                    continue
+                                new_files.append(file)
 
                     # st.session_state.documents= new_files
                     if new_files:
@@ -311,11 +314,16 @@ def dashboard():
 
         if st.session_state.button=="active" and query:
             with st.spinner("Processing query..."):
-
+              
                 if st.session_state.mode == "COMPARISON":
-                    
-                    if len(st.session_state.selected_docs) == 2:
-                        uploaded_files= load_uploaded_pdfs(files_to_pass)
+                    if st.session_state.selected_docs == []:
+                        st.error("Please first select two pdfs between which you would like to do comparison.")
+                    elif len(st.session_state.selected_docs) == 2:
+                        success, message, uploaded_files= load_uploaded_pdfs(files_to_pass)
+                        print("uploaded_files", uploaded_files)
+                        if not success:
+                            st.error(f"Cannot process: {message}")
+                            st.stop()
                         clean_uploaded_files= clean_text(uploaded_files)
                         all_chunks= split_doc(clean_uploaded_files)
                         document_a_chunks= get_document_chunks(all_chunks, st.session_state.documents_name[0])
@@ -325,14 +333,21 @@ def dashboard():
                         # answer_portion()
                         
                     else:
-                        st.error("Sorry! You can upload ony two files for comparison")
+                        st.error("Sorry! You can select only two files for comparison")
                     
                 elif st.session_state.mode == "SUMMARY":
-                    uploaded_files= load_uploaded_pdfs(files_to_pass)
-                    clean_uploaded_files= clean_text(uploaded_files)
-                    docs_chunks= split_doc(clean_uploaded_files)
-                    answer= summarize_document(docs_chunks)
-                    st.session_state.answer= answer
+                    if not st.session_state.selected_docs:
+                        st.warning("Please first select the pdf for which you would like to get a summary.")
+                        st.stop()
+                    else:
+                        success, message, uploaded_files= load_uploaded_pdfs(files_to_pass)
+                        if not success:
+                            st.error(f"Cannot process: {message}")
+                            st.stop()
+                        clean_uploaded_files= clean_text(uploaded_files)
+                        docs_chunks= split_doc(clean_uploaded_files)
+                        answer= summarize_document(docs_chunks)
+                        st.session_state.answer= answer
 
                 elif st.session_state.mode == "QUESTION":
                     results= retriever_pipeline(query)
